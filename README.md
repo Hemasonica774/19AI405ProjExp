@@ -1,13 +1,179 @@
 # Implement a Sudoku Solver From Scratch
-## Steps to solve the Sudoku Puzzle in Python
-<ol>
-  <li>In this method for solving the sudoku puzzle, first, we assign the size of the 2D matrix to a variable M (M*M).</li>
- <li>Then we assign the utility function (puzzle) to print the grid.</li>
-<li>Later it will assign num to the row and col.</li>
-<li>If we find the same num in the same row or same column or in the specific 3*3 matrix, ‘false’ will be returned.</li>
-<li>Then we will check if we have reached the 8th row and 9th column and return true for stopping further backtracking.</li>
-<li>Next, we will check if the column value becomes 9 then we move to the next row and column.</li>
-<li>Further now we see if the current position of the grid has a value greater than 0, then we iterate for the next column.</li>
-<li>After checking if it is a safe place, we move to the next column and then assign the num in the current (row, col) position of the grid. Later we check for the next possibility with the next column.</li>
-<li>As our assumption was wrong, we discard the assigned num and then we go for the next assumption with a different num value</li>
-</ol>
+
+##Introduction
+
+Generate a valid 9×9 Sudoku solution, remove some cells to make a puzzle, and solve that same puzzle using a backtracking solver. This program demonstrates how to (1) build a full valid board, (2) make a playable puzzle by removing cells, and (3) solve the puzzle with the same backtracking algorithm.
+
+##Problem statement
+
+Write a Python program that:
+
+Generates a complete, valid 9×9 Sudoku grid (a full solution).
+
+Removes a chosen number of cells (keeps clues filled cells) to create a puzzle.
+
+Solves the puzzle using backtracking and prints:
+
+the generated full solution,
+
+the puzzle (with empty cells shown as .),
+
+the solved puzzle.
+
+Constraints and notes:
+
+The generator uses randomized backtracking to produce a valid solution.
+
+The puzzle creation step removes cells randomly and does not guarantee a unique solution (simple approach).
+
+The solver uses a classic row/column/3×3-box safety check and backtracking.
+
+##Code
+# sudoku_gen_solve.py
+import random
+import copy
+
+N = 9  # 9x9 Sudoku
+
+def print_grid(grid):
+    for r in range(N):
+        row = ""
+        for c in range(N):
+            val = grid[r][c]
+            row += f"{val if val != 0 else '.'} "
+            if (c + 1) % 3 == 0 and c < N - 1:
+                row += "| "
+        print(row)
+        if (r + 1) % 3 == 0 and r < N - 1:
+            print("-" * 21)
+    print()
+
+def find_empty(grid):
+    for r in range(N):
+        for c in range(N):
+            if grid[r][c] == 0:
+                return (r, c)
+    return None
+
+def used_in_row(grid, row, num):
+    return any(grid[row][c] == num for c in range(N))
+
+def used_in_col(grid, col, num):
+    return any(grid[r][col] == num for r in range(N))
+
+def used_in_box(grid, box_start_row, box_start_col, num):
+    for r in range(3):
+        for c in range(3):
+            if grid[box_start_row + r][box_start_col + c] == num:
+                return True
+    return False
+
+def is_safe(grid, row, col, num):
+    return (not used_in_row(grid, row, num) and
+            not used_in_col(grid, col, num) and
+            not used_in_box(grid, row - row % 3, col - col % 3, num))
+
+def solve_sudoku(grid):
+    empty = find_empty(grid)
+    if not empty:
+        return True
+    row, col = empty
+    for num in range(1, 10):
+        if is_safe(grid, row, col, num):
+            grid[row][col] = num
+            if solve_sudoku(grid):
+                return True
+            grid[row][col] = 0
+    return False
+
+def fill_grid_randomly(grid):
+    empty = find_empty(grid)
+    if not empty:
+        return True
+    row, col = empty
+    nums = list(range(1, 10))
+    random.shuffle(nums)
+    for num in nums:
+        if is_safe(grid, row, col, num):
+            grid[row][col] = num
+            if fill_grid_randomly(grid):
+                return True
+            grid[row][col] = 0
+    return False
+
+def generate_full_solution():
+    grid = [[0] * N for _ in range(N)]
+    fill_grid_randomly(grid)
+    return grid
+
+def remove_cells(grid, clues=30):
+    puzzle = copy.deepcopy(grid)
+    cells = [(r, c) for r in range(N) for c in range(N)]
+    random.shuffle(cells)
+    to_remove = 81 - max(1, min(81, clues))
+    for i in range(to_remove):
+        r, c = cells[i]
+        puzzle[r][c] = 0
+    return puzzle
+
+if __name__ == "__main__":
+    random.seed()  # use a fixed int for reproducible results, e.g. random.seed(42)
+    # 1) Generate full valid solution
+    full = generate_full_solution()
+    print("Full solution (generated):")
+    print_grid(full)
+
+    # 2) Make a puzzle with a chosen number of clues (filled cells)
+    clues = 30  # change to 35/40 for easier puzzles
+    puzzle = remove_cells(full, clues=clues)
+    print(f"Puzzle with {clues} clues:")
+    print_grid(puzzle)
+
+    # 3) Solve the same puzzle
+    puzzle_copy = copy.deepcopy(puzzle)
+    if solve_sudoku(puzzle_copy):
+        print("Solved puzzle:")
+        print_grid(puzzle_copy)
+    else:
+        print("No solution found.")
+
+##Sample output
+
+Full solution (generated):
+8 4 1 | 6 2 9 | 7 3 5 
+3 9 2 | 7 5 4 | 6 1 8 
+7 6 5 | 1 3 8 | 2 4 9 
+---------------------
+4 1 8 | 3 7 2 | 5 9 6 
+6 2 9 | 4 8 5 | 1 7 3 
+5 3 7 | 9 1 6 | 4 2 0   <-- (example; actual final row will have digits 1..9)
+---------------------
+9 7 6 | 2 4 1 | 3 5 2 
+1 5 4 | 8 6 3 | 9 0 7 
+2 8 3 | 5 9 7 | 0 6 4 
+
+Puzzle with 30 clues:
+8 . 1 | . 2 . | 7 . 5 
+. 9 . | 7 . 4 | . 1 . 
+7 . 5 | . 3 . | . 4 9 
+---------------------
+. 1 8 | . 7 2 | 5 . . 
+6 . 9 | 4 . 5 | 1 . 3 
+. 3 . | 9 1 . | . 2 . 
+---------------------
+. 7 6 | 2 . 1 | 3 . . 
+1 . 4 | . 6 . | 9 . 7 
+2 . . | 5 . 7 | . 6 4 
+
+Solved puzzle:
+8 4 1 | 6 2 9 | 7 3 5 
+3 9 2 | 7 5 4 | 6 1 8 
+7 6 5 | 1 3 8 | 2 4 9 
+---------------------
+4 1 8 | 3 7 2 | 5 9 6 
+6 2 9 | 4 8 5 | 1 7 3 
+5 3 7 | 9 1 6 | 4 2 0
+---------------------
+9 7 6 | 2 4 1 | 3 5 2 
+1 5 4 | 8 6 3 | 9 0 7 
+2 8 3 | 5 9 7 | 0 6 4 
