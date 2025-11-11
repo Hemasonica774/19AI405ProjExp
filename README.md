@@ -1,10 +1,10 @@
 # Implement a Sudoku Solver From Scratch
 
-##Introduction
+## Introduction
 
 Generate a valid 9×9 Sudoku solution, remove some cells to make a puzzle, and solve that same puzzle using a backtracking solver. This program demonstrates how to (1) build a full valid board, (2) make a playable puzzle by removing cells, and (3) solve the puzzle with the same backtracking algorithm.
 
-##Problem statement
+## Problem statement
 
 Write a Python program that:
 
@@ -28,8 +28,8 @@ The puzzle creation step removes cells randomly and does not guarantee a unique 
 
 The solver uses a classic row/column/3×3-box safety check and backtracking.
 
-##Code
-# sudoku_gen_solve.py
+## Code
+## sudoku_gen_solve.py
 import random
 import copy
 
@@ -138,8 +138,3 @@ if __name__ == "__main__":
         print("No solution found.")
 
 
-5 3 7 | 9 1 6 | 4 2 0
----------------------
-9 7 6 | 2 4 1 | 3 5 2 
-1 5 4 | 8 6 3 | 9 0 7 
-2 8 3 | 5 9 7 | 0 6 4 
