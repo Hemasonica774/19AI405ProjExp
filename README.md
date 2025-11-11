@@ -30,6 +30,7 @@ The solver uses a classic row/column/3×3-box safety check and backtracking.
 
 ## Code
 ## sudoku_gen_solve.py
+```
 import random
 import copy
 
@@ -136,5 +137,5 @@ if __name__ == "__main__":
         print_grid(puzzle_copy)
     else:
         print("No solution found.")
-
+```
 
